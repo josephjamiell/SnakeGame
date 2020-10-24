@@ -1,12 +1,19 @@
 #include "game.h"
 #include <iostream>
+#include <algorithm>
+#include <map>
 #include "SDL.h"
 
-Game::Game(std::size_t grid_width, std::size_t grid_height)
-    : snake(grid_width, grid_height),
+Game::Game(Player &player, std::size_t grid_width, std::size_t grid_height)
+    : _player(player),
+      snake(player.GetDifficulty(), grid_width, grid_height),
       engine(dev()),
       random_w(0, static_cast<int>(grid_width)),
       random_h(0, static_cast<int>(grid_height)) {
+  if(_player.GetDifficulty() == 2){
+    wall.CreateWall();
+  }
+  _player.LoadScores();
   PlaceFood();
 }
 
@@ -19,13 +26,15 @@ void Game::Run(Controller const &controller, Renderer &renderer,
   int frame_count = 0;
   bool running = true;
 
+  //PlaceObstacles();
+
   while (running) {
     frame_start = SDL_GetTicks();
 
     // Input, Update, Render - the main game loop.
     controller.HandleInput(running, snake);
     Update();
-    renderer.Render(snake, food);
+    renderer.Render(wall, snake, food, obstacles);
 
     frame_end = SDL_GetTicks();
 
@@ -50,23 +59,51 @@ void Game::Run(Controller const &controller, Renderer &renderer,
   }
 }
 
+void Game::PlaceObstacles(){
+  int x, y;
+
+  for(int i = 0; i < numOfObstacles; ++i){
+    x = random_w(engine);
+    y = random_h(engine);
+    std::vector<SDL_Point> obstacle{};
+    for(int j = 0; j < numOfBlocksInObstacle; j++){
+      obstacle.emplace_back(SDL_Point{x + i, y + i});
+    }
+    obstacles.emplace_back(obstacle);
+  }
+}
+
 void Game::PlaceFood() {
   int x, y;
   while (true) {
     x = random_w(engine);
     y = random_h(engine);
-    // Check that the location is not occupied by a snake item before placing
+    // Check that the location is not occupied by a snake or wall item item before placing
     // food.
-    if (!snake.SnakeCell(x, y)) {
-      food.x = x;
-      food.y = y;
-      return;
+    if(_player.GetDifficulty() == 2){
+      if (!snake.SnakeCell(x, y) && x < 30 && x > 2 && y < 30 && y > 2) {
+        food.setPosition(x, y);
+        return;
+      }
+    }
+    else{
+      if (!snake.SnakeCell(x, y) && x < 31 && x > 1 && y < 31 && y > 1) {
+        food.setPosition(x, y);
+        return;
+      }
     }
   }
 }
 
 void Game::Update() {
-  if (!snake.alive) return;
+  //Check if snake has died
+  if (!snake.alive){
+    if(!_player.saved){
+      _player.Save();
+      _player.saved = true;
+    }
+    return;
+  }
 
   snake.Update();
 
@@ -74,14 +111,12 @@ void Game::Update() {
   int new_y = static_cast<int>(snake.head_y);
 
   // Check if there's food over here
-  if (food.x == new_x && food.y == new_y) {
-    score++;
+  if (food.getPosition().x == new_x && food.getPosition().y == new_y) {
+    _player.SetScore(score++);
     PlaceFood();
     // Grow snake and increase speed.
     snake.GrowBody();
-    snake.speed += 0.02;
+    snake.speed += 0.015;
   }
+  
 }
-
-int Game::GetScore() const { return score; }
-int Game::GetSize() const { return snake.size; }

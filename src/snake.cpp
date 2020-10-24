@@ -5,8 +5,7 @@
 void Snake::Update() {
   SDL_Point prev_cell{
       static_cast<int>(head_x),
-      static_cast<int>(
-          head_y)};  // We first capture the head's cell before updating.
+      static_cast<int>(head_y)};  // We first capture the head's cell before updating.
   UpdateHead();
   SDL_Point current_cell{
       static_cast<int>(head_x),
@@ -58,6 +57,13 @@ void Snake::UpdateBody(SDL_Point &current_head_cell, SDL_Point &prev_head_cell) 
   // Check if the snake has died.
   for (auto const &item : body) {
     if (current_head_cell.x == item.x && current_head_cell.y == item.y) {
+      alive = false;
+    }
+  }
+
+  // Check if snake hit a wall, if dificulty is 2 or greater
+  if(_difficulty >= 2){
+    if((current_head_cell.y > 30 || current_head_cell.y < 1) || (current_head_cell.x > 30 || current_head_cell.x < 1)){
       alive = false;
     }
   }
