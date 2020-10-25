@@ -9,7 +9,7 @@ class Food : public GameObject
     // constructor / destructor
     Food();
     // getter / setter
-    bool getIsSuper();
+    bool GetIsSuper();
 
     private:
     bool _isSuper{false};

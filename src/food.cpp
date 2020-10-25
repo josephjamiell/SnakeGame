@@ -5,7 +5,7 @@ Food::Food()
 {
     _objectType = GameObjectType::foodObject;
 }
-bool Food::getIsSuper()
+bool Food::GetIsSuper()
 {
     return _isSuper;
 }

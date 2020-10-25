@@ -18,12 +18,25 @@ void Player::ShowGreeting()
 }
 
 void Player::Save(){
-  topScores[_name] = _score;
   std::ofstream scoreFile(saveFile);
   if(scoreFile.is_open()){
+    int max_score = 0;
     for(auto obj : topScores){
+      if(obj.second > max_score){
+        max_score = obj.second;
+      }
       scoreFile << obj.first << " " << obj.second << std::endl;
     }
+    if(_score > max_score){
+      std::cout << "\n ------------------------------------- " << std::endl;
+      std::cout << "| CONGRATULATIONS!  A NEW HIGH SCORE! |" << std::endl;
+      std::cout << " ------------------------------------- " << std::endl;
+      std::cout << "\nPLAYER: " << _name  << "   Score: " << _score << std::endl;
+      std::cout << "\n ------------------------------------- " << std::endl;
+      std::cout << "| CONGRATULATIONS!  A NEW HIGH SCORE! |" << std::endl;
+      std::cout << " ------------------------------------- \n" << std::endl;
+    }
+    scoreFile << _name << " " << _score << std::endl;
   }
   scoreFile.close();
 }
@@ -40,11 +53,6 @@ void Player::LoadScores(){
           topScores[name] = s;
       }
     }
-    /* if(!topScores.empty()){
-      std::cout << "This dictionary is not empty. It has " << topScores.size() << " item." << std::endl;
-      std::cout << "Name: " << topScores.begin()->first << " with Score: " << topScores.end()->second << std::endl;
-    }
-    else{std::cout << "The dictionary is empty." << std::endl;} */
   }
   scoreFile.close();
 }
